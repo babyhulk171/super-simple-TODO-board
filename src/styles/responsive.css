@@ -1,0 +1,68 @@
+@media (max-width: 720px) {
+  .app-header {
+    grid-template-columns: auto 1fr auto;
+    gap: 10px;
+    height: 68px;
+    padding: 0 16px;
+  }
+
+  .brand > span:last-child,
+  .title-wrap .eyebrow,
+  .header-actions .quiet-button {
+    display: none;
+  }
+
+  .title-wrap {
+    justify-content: flex-start;
+  }
+
+  .title-wrap input {
+    text-align: left;
+  }
+
+  .board-shell {
+    padding-top: 30px;
+  }
+
+  .board-intro {
+    align-items: flex-start;
+    padding: 0 20px 22px;
+  }
+
+  .board-intro > p {
+    display: none;
+  }
+
+  .board-track {
+    gap: 12px;
+    padding: 4px 20px 30px;
+  }
+
+  .kanban-column {
+    width: min(82vw, 300px);
+    max-height: calc(100vh - 200px);
+  }
+
+  .dialog-card {
+    padding: 18px;
+  }
+
+  .dialog-actions {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .dialog-actions > span {
+    display: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+  }
+}
+
