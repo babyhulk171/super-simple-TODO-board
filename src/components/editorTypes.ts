@@ -3,4 +3,5 @@ export type EditorState =
   | { kind: "card"; cardId: string }
   | { kind: "new-column" }
   | { kind: "column"; columnId: string }
+  | { kind: "import-board" }
   | null;

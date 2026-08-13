@@ -16,6 +16,7 @@ interface BoardViewProps {
   dispatch: React.Dispatch<BoardAction>;
   onToggleTheme: () => void;
   onReset: () => void;
+  onImportBoard: () => void;
   onAddCard: (columnId: string) => void;
   onEditCard: (cardId: string) => void;
   onAddColumn: () => void;
@@ -39,13 +40,13 @@ function BoardTrack({ board, dispatch, onAddCard, onEditCard, onAddColumn, onEdi
 
 /** Renders the horizontal drag-and-drop workspace. Example: `<BoardView board={board} ... />`. */
 export function BoardView(props: BoardViewProps) {
-  const { board, theme, saveStatus, dispatch, onToggleTheme, onReset } = props;
+  const { board, theme, saveStatus, dispatch, onToggleTheme, onReset, onImportBoard } = props;
   const dnd = useBoardDnd(board, dispatch);
   const activeCard = dnd.activeEntity?.kind === "card" ? findBoardCard(board, dnd.activeEntity.cardId) : undefined;
   return (
     <DndContext sensors={dnd.sensors} collisionDetection={boardCollisionDetection} onDragStart={dnd.onDragStart} onDragOver={dnd.onDragOver} onDragEnd={dnd.onDragEnd} onDragCancel={dnd.onDragCancel}>
       <main className="board-shell" id="board">
-        <BoardControls title={board.title} theme={theme} saveStatus={saveStatus} dispatch={dispatch} onToggleTheme={onToggleTheme} onReset={onReset} />
+        <BoardControls title={board.title} theme={theme} saveStatus={saveStatus} dispatch={dispatch} onToggleTheme={onToggleTheme} onReset={onReset} onImportBoard={onImportBoard} />
         <BoardTrack {...props} board={dnd.projectedBoard} />
       </main>
       <DragOverlay>{activeCard && <CardDragPreview card={activeCard} />}</DragOverlay>
