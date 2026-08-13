@@ -15,6 +15,15 @@ class MemoryBoardStorage implements BoardStorage {
 }
 
 describe("board storage", () => {
+  it("starts with three empty blue workflow columns", () => {
+    expect(initialBoard.columns).toEqual([
+      { id: "planned", title: "Planned", tone: "blue", cardIds: [] },
+      { id: "progress", title: "In Progress", tone: "blue", cardIds: [] },
+      { id: "done", title: "Done", tone: "blue", cardIds: [] },
+    ]);
+    expect(initialBoard.cards).toEqual({});
+  });
+
   it("returns the starter board when storage is empty or malformed", () => {
     const storage = new MemoryBoardStorage();
     expect(loadBoard(storage)).toEqual(initialBoard);
