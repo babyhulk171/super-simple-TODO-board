@@ -18,8 +18,8 @@ export function KanbanColumnView(props: KanbanColumnViewProps) {
   const sortable = useSortable({ id: column.id });
   const style = { transform: CSS.Transform.toString(sortable.transform), transition: sortable.transition };
   return (
-    <section ref={sortable.setNodeRef} style={style} className={`kanban-column tone-${column.tone} ${sortable.isDragging ? "is-dragging" : ""}`}>
-      <header className="column-header"><div><span className="tone-dot" /><h2>{column.title}</h2><span className="card-count">{column.cardIds.length}</span></div><div className="column-tools"><button className="drag-handle" type="button" aria-label={`Move ${column.title} list`} {...sortable.attributes} {...sortable.listeners}>⠿</button><button className="small-icon" type="button" onClick={() => onEditColumn(column.id)} aria-label={`Edit ${column.title}`}>•••</button></div></header>
+    <section ref={sortable.setNodeRef} style={style} className={`kanban-column tone-${column.tone} ${sortable.isDragging ? "is-dragging" : ""}`} onPointerDown={(event) => sortable.listeners?.onPointerDown?.(event)}>
+      <header className="column-header"><div><span className="tone-dot" /><h2>{column.title}</h2><span className="card-count">{column.cardIds.length}</span></div><div className="column-tools"><button ref={sortable.setActivatorNodeRef} className="drag-handle" type="button" aria-label={`Move ${column.title} list`} {...sortable.attributes} onKeyDown={(event) => sortable.listeners?.onKeyDown?.(event)}>⠿</button><button className="small-icon" type="button" onClick={() => onEditColumn(column.id)} aria-label={`Edit ${column.title}`}>•••</button></div></header>
       <SortableContext items={column.cardIds} strategy={verticalListSortingStrategy}><div className="card-stack">{column.cardIds.map((cardId) => board.cards[cardId] && <KanbanCardView key={cardId} card={board.cards[cardId]} dispatch={dispatch} onEdit={onEditCard} />)}</div></SortableContext>
       <button className="add-card-button" type="button" onClick={() => onAddCard(column.id)}><span aria-hidden="true">＋</span> Add a card</button>
     </section>

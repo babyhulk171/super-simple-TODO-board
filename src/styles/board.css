@@ -81,6 +81,7 @@
   border: 1px solid var(--line);
   border-radius: 8px;
   background: var(--surface);
+  cursor: grab;
   transition: border-color 120ms ease, opacity 120ms ease;
 }
 
@@ -183,6 +184,7 @@
   border: 1px solid var(--line);
   border-radius: 6px;
   background: var(--surface-solid);
+  cursor: default;
   transition: border-color 120ms ease, background 120ms ease, opacity 120ms ease;
 }
 
@@ -196,6 +198,10 @@
   z-index: 20;
   opacity: 0.58;
   box-shadow: 0 8px 22px rgba(22, 31, 43, 0.16);
+}
+
+.kanban-column.is-dragging {
+  cursor: grabbing;
 }
 
 .card-topline {
