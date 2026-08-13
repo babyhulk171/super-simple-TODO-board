@@ -1,50 +1,39 @@
 @media (max-width: 720px) {
-  .app-header {
-    grid-template-columns: auto 1fr auto;
-    gap: 10px;
-    height: 68px;
-    padding: 0 16px;
-  }
-
-  .brand > span:last-child,
-  .title-wrap .eyebrow,
-  .header-actions .quiet-button {
-    display: none;
-  }
-
-  .title-wrap {
-    justify-content: flex-start;
-  }
-
-  .title-wrap input {
-    text-align: left;
+  body {
+    background-size: 96px 30px;
   }
 
   .board-shell {
-    padding-top: 30px;
+    padding-top: 14px;
   }
 
-  .board-intro {
-    align-items: flex-start;
-    padding: 0 20px 22px;
+  .board-controls {
+    gap: 10px;
+    margin-bottom: 12px;
+    padding: 0 16px;
   }
 
-  .board-intro > p {
+  .board-name input {
+    width: min(48vw, 220px);
+  }
+
+  .save-note,
+  .board-actions .quiet-button {
     display: none;
   }
 
   .board-track {
-    gap: 12px;
-    padding: 4px 20px 30px;
+    gap: 10px;
+    padding: 2px 16px 28px;
   }
 
   .kanban-column {
-    width: min(82vw, 300px);
-    max-height: calc(100vh - 200px);
+    width: min(84vw, 292px);
+    max-height: calc(100vh - 82px);
   }
 
   .dialog-card {
-    padding: 18px;
+    padding: 17px;
   }
 
   .dialog-actions {
@@ -65,4 +54,3 @@
     animation-duration: 0.01ms !important;
   }
 }
-

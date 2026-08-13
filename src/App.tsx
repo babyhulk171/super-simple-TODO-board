@@ -1,7 +1,6 @@
 import { useCallback, useState } from "react";
 import { initialBoard } from "./board/initialBoard";
 import { usePersistentBoard, useTheme } from "./board/hooks";
-import { AppHeader } from "./components/AppHeader";
 import { BoardView } from "./components/BoardView";
 import { CardDialog } from "./components/CardDialog";
 import { ColumnDialog } from "./components/ColumnDialog";
@@ -20,8 +19,7 @@ export default function App() {
   const editedColumn = editor?.kind === "column" ? board.columns.find((column) => column.id === editor.columnId) : undefined;
   return (
     <div className="app-frame">
-      <AppHeader title={board.title} theme={theme} dispatch={dispatch} onToggleTheme={toggleTheme} onReset={resetBoard} />
-      <BoardView board={board} dispatch={dispatch} onAddCard={(columnId) => setEditor({ kind: "new-card", columnId })} onEditCard={(cardId) => setEditor({ kind: "card", cardId })} onAddColumn={() => setEditor({ kind: "new-column" })} onEditColumn={(columnId) => setEditor({ kind: "column", columnId })} />
+      <BoardView board={board} theme={theme} dispatch={dispatch} onToggleTheme={toggleTheme} onReset={resetBoard} onAddCard={(columnId) => setEditor({ kind: "new-card", columnId })} onEditCard={(cardId) => setEditor({ kind: "card", cardId })} onAddColumn={() => setEditor({ kind: "new-column" })} onEditColumn={(columnId) => setEditor({ kind: "column", columnId })} />
       {(editor?.kind === "new-card" || editedCard) && cardColumnId && <CardDialog card={editedCard} columnId={cardColumnId} dispatch={dispatch} onClose={closeEditor} />}
       {(editor?.kind === "new-column" || editedColumn) && <ColumnDialog column={editedColumn} dispatch={dispatch} onClose={closeEditor} />}
     </div>
