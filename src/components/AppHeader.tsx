@@ -12,7 +12,7 @@ interface AppHeaderProps {
 export function AppHeader({ title, theme, dispatch, onToggleTheme, onReset }: AppHeaderProps) {
   return (
     <header className="app-header">
-      <a className="brand" href="#board" aria-label="Nimbus board home"><span className="brand-mark">N</span><span>Nimbus</span></a>
+      <a className="brand" href="#board" aria-label="Super Simple TODO home"><span className="brand-mark">S</span><span>Super Simple TODO</span></a>
       <div className="title-wrap"><span className="eyebrow">My board</span><input aria-label="Board title" value={title} onChange={(event) => dispatch({ type: "rename-board", title: event.target.value })} /></div>
       <nav className="header-actions" aria-label="Board controls">
         <button className="quiet-button" type="button" onClick={onReset}>Reset</button>

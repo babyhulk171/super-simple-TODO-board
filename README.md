@@ -1,4 +1,4 @@
-# Nimbus Kanban
+# Super Simple TODO
 
 A small, customizable Kanban board built with React, TypeScript, Vite, and dnd-kit. Everything is stored locally in the browser, so the app needs no account, database, or backend.
 

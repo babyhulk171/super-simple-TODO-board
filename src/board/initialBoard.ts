@@ -1,7 +1,7 @@
 import type { KanbanBoard } from "./types";
 
 export const initialBoard: KanbanBoard = {
-  title: "Product launch",
+  title: "Super Simple TODO",
   columns: [
     { id: "planned", title: "Planned", tone: "blue", cardIds: [] },
     { id: "progress", title: "In Progress", tone: "blue", cardIds: [] },
