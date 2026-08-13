@@ -48,7 +48,9 @@ function moveCard(board: KanbanBoard, action: Extract<BoardAction, { type: "move
   if (targetIndex < 0) return board;
   const target = columns[targetIndex];
   const overIndex = action.overCardId ? target.cardIds.indexOf(action.overCardId) : -1;
-  const insertAt = overIndex < 0 ? target.cardIds.length : overIndex;
+  const fallbackIndex = overIndex < 0 ? target.cardIds.length : overIndex;
+  const requestedIndex = Number.isInteger(action.toIndex) ? action.toIndex : fallbackIndex;
+  const insertAt = Math.min(Math.max(requestedIndex ?? fallbackIndex, 0), target.cardIds.length);
   target.cardIds.splice(insertAt, 0, action.cardId);
   return { ...board, columns };
 }

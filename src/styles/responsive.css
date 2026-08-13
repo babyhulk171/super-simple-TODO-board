@@ -1,4 +1,8 @@
 @media (max-width: 720px) {
+  :root {
+    --column-width: min(84vw, 292px);
+  }
+
   .board-shell {
     padding-top: 14px;
   }
@@ -24,7 +28,6 @@
   }
 
   .kanban-column {
-    width: min(84vw, 292px);
     max-height: calc(100vh - 82px);
   }
 

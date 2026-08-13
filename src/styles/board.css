@@ -57,6 +57,16 @@
   font-size: 11px;
 }
 
+.save-note.is-error {
+  color: var(--rose);
+}
+
+.board-scroller {
+  overflow-x: auto;
+  scrollbar-color: var(--line-strong) transparent;
+  scrollbar-width: thin;
+}
+
 .board-track {
   display: flex;
   align-items: flex-start;
@@ -65,16 +75,11 @@
   padding: 2px max(32px, calc((100vw - 1480px) / 2 + 32px)) 36px;
 }
 
-.board-shell > div:last-child {
-  overflow-x: auto;
-  scrollbar-color: var(--line-strong) transparent;
-  scrollbar-width: thin;
-}
-
 .kanban-column {
   --tone: var(--blue);
   position: relative;
-  width: 296px;
+  width: var(--column-width);
+  flex: 0 0 var(--column-width);
   max-height: calc(100vh - 110px);
   padding: 10px;
   overflow: hidden auto;
@@ -209,7 +214,7 @@
 }
 
 .card-drag-preview {
-  width: 276px;
+  width: calc(var(--column-width) - 20px);
   pointer-events: none;
   cursor: grabbing;
   box-shadow: 0 14px 30px rgba(22, 31, 43, 0.22);

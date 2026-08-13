@@ -112,6 +112,11 @@
   box-shadow: 0 0 0 2px var(--text);
 }
 
+.tone-picker input:focus-visible + .tone-swatch {
+  outline: 2px solid var(--blue);
+  outline-offset: 3px;
+}
+
 .editor-form .check-row {
   display: flex;
 }

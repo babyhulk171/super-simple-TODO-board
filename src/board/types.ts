@@ -36,6 +36,6 @@ export type BoardAction =
   | { type: "update-card"; card: KanbanCard }
   | { type: "delete-card"; cardId: string }
   | { type: "toggle-card"; cardId: string }
-  | { type: "move-card"; cardId: string; toColumnId: string; overCardId?: string }
+  | { type: "move-card"; cardId: string; toColumnId: string; toIndex?: number; overCardId?: string }
   | { type: "reorder-column"; columnId: string; overColumnId: string }
   | { type: "reset-board"; board: KanbanBoard };
