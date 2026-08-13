@@ -1,8 +1,4 @@
 @media (max-width: 720px) {
-  body {
-    background-size: 96px 30px;
-  }
-
   .board-shell {
     padding-top: 14px;
   }

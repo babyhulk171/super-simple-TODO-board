@@ -10,7 +10,8 @@
   font-synthesis: none;
   text-rendering: optimizeLegibility;
   --canvas: #fbfcfe;
-  --grid: #edf0f4;
+  --canvas-end: #eaf0f7;
+  --canvas-glow: rgba(75, 137, 205, 0.1);
   --surface: #ffffff;
   --surface-solid: #ffffff;
   --surface-soft: #f4f6f9;
@@ -31,7 +32,8 @@
   color: #eef2f7;
   background: #11151a;
   --canvas: #11151a;
-  --grid: #202730;
+  --canvas-end: #182330;
+  --canvas-glow: rgba(76, 155, 255, 0.1);
   --surface: #171c22;
   --surface-solid: #1c222a;
   --surface-soft: #212832;
@@ -64,9 +66,9 @@ body {
   color: var(--text);
   background-color: var(--canvas);
   background-image:
-    linear-gradient(to right, var(--grid) 1px, transparent 1px),
-    linear-gradient(to bottom, var(--grid) 1px, transparent 1px);
-  background-size: 132px 32px;
+    radial-gradient(circle at 12% 0%, var(--canvas-glow), transparent 38rem),
+    linear-gradient(145deg, var(--canvas) 0%, var(--canvas-end) 100%);
+  background-attachment: fixed;
 }
 
 button,
