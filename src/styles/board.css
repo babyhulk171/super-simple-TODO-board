@@ -184,7 +184,7 @@
   border: 1px solid var(--line);
   border-radius: 6px;
   background: var(--surface-solid);
-  cursor: default;
+  cursor: grab;
   transition: border-color 120ms ease, background 120ms ease, opacity 120ms ease;
 }
 
@@ -202,6 +202,45 @@
 
 .kanban-column.is-dragging {
   cursor: grabbing;
+}
+
+.kanban-card.is-dragging {
+  cursor: grabbing;
+}
+
+.card-drag-preview {
+  width: 276px;
+  pointer-events: none;
+  cursor: grabbing;
+  box-shadow: 0 14px 30px rgba(22, 31, 43, 0.22);
+  transform: rotate(1.5deg);
+}
+
+.card-drag-preview-title,
+.card-drag-preview-details {
+  display: block;
+}
+
+.card-drag-preview-title {
+  padding: 6px 0 5px;
+  font-size: 13px;
+  font-weight: 680;
+  line-height: 1.35;
+}
+
+.card-drag-preview-details {
+  overflow: hidden;
+  color: var(--text-soft);
+  font-size: 11px;
+  line-height: 1.45;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.card-drag-preview.is-complete .card-drag-preview-title {
+  color: var(--text-soft);
+  text-decoration: line-through;
+  text-decoration-thickness: 1px;
 }
 
 .card-topline {
