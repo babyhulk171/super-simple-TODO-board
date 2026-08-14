@@ -1,5 +1,5 @@
-import { useCallback, useEffect, useMemo, useReducer, useState } from "react";
-import { loadWorkspace, saveWorkspace, type BoardStorage } from "./storage";
+import { useCallback, useEffect, useMemo, useReducer, useRef, useState } from "react";
+import { BOARD_KEY, loadWorkspace, saveWorkspace, type BoardStorage, type WorkspaceLoadIssue } from "./storage";
 import type { Theme } from "./types";
 import { workspaceReducer } from "./workspaceReducer";
 import type { KanbanWorkspace, WorkspaceAction } from "./workspaceTypes";
@@ -7,13 +7,16 @@ import type { KanbanWorkspace, WorkspaceAction } from "./workspaceTypes";
 const THEME_KEY = "super-simple-todo-theme";
 const LEGACY_THEME_KEY = "nimbus-theme";
 
-export type BoardSaveStatus = "saved" | "error";
+export type BoardSaveStatus = "saved" | "error" | "conflict";
 
 const UNAVAILABLE_STORAGE: BoardStorage = {
   getItem(): null {
     return null;
   },
   setItem(key: string): void {
+    throw new DOMException(`Storage is unavailable for key "${key}"; expected writable localStorage.`, "SecurityError");
+  },
+  removeItem(key: string): void {
     throw new DOMException(`Storage is unavailable for key "${key}"; expected writable localStorage.`, "SecurityError");
   },
 };
@@ -59,16 +62,39 @@ function applyThemeToDocument(theme: Theme): void {
 }
 
 /** Keeps workspace changes on this device. Example: `const [workspace, dispatch] = usePersistentWorkspace()`. */
-export function usePersistentWorkspace(): [KanbanWorkspace, React.Dispatch<WorkspaceAction>, BoardSaveStatus] {
+export function usePersistentWorkspace(): [KanbanWorkspace, React.Dispatch<WorkspaceAction>, BoardSaveStatus, WorkspaceLoadIssue | undefined, () => void] {
   const storage = useMemo(() => getBoardStorage(), []);
-  const [workspace, dispatch] = useReducer(workspaceReducer, storage, loadWorkspace);
+  const [initialLoad] = useState(() => loadWorkspace(storage));
+  const [workspace, dispatch] = useReducer(workspaceReducer, initialLoad.workspace);
   const [saveStatus, setSaveStatus] = useState<BoardSaveStatus>("saved");
+  const [loadIssue, setLoadIssue] = useState<WorkspaceLoadIssue | undefined>(initialLoad.issue);
+  const [persistenceEnabled, setPersistenceEnabled] = useState(!initialLoad.issue);
+  const [hasExternalChange, setHasExternalChange] = useState(false);
+  const hasMounted = useRef(false);
   useEffect(() => {
+    if (!hasMounted.current) {
+      hasMounted.current = true;
+      return;
+    }
+    if (!persistenceEnabled || hasExternalChange) return;
     const saveResult = saveWorkspace(storage, workspace);
     const statusUpdate = window.setTimeout(() => setSaveStatus(saveResult.saved ? "saved" : "error"), 0);
     return () => window.clearTimeout(statusUpdate);
-  }, [storage, workspace]);
-  return [workspace, dispatch, saveStatus];
+  }, [hasExternalChange, persistenceEnabled, storage, workspace]);
+  useEffect(() => {
+    const detectExternalChange = (event: StorageEvent) => {
+      if (event.key !== BOARD_KEY || event.storageArea !== window.localStorage) return;
+      setHasExternalChange(true);
+      setSaveStatus("conflict");
+    };
+    window.addEventListener("storage", detectExternalChange);
+    return () => window.removeEventListener("storage", detectExternalChange);
+  }, []);
+  const replaceInvalidStorage = useCallback(() => {
+    setLoadIssue(undefined);
+    setPersistenceEnabled(true);
+  }, []);
+  return [workspace, dispatch, saveStatus, loadIssue, replaceInvalidStorage];
 }
 
 /** Controls the saved color theme. Example: `const [theme, toggle] = useTheme()`. */

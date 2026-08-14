@@ -15,6 +15,10 @@ class MemoryBoardStorage implements BoardStorage {
   setItem(key: string, value: string): void {
     this.storedValues.set(key, value);
   }
+
+  removeItem(key: string): void {
+    this.storedValues.delete(key);
+  }
 }
 
 class FailingBoardStorage implements BoardStorage {
@@ -25,6 +29,10 @@ class FailingBoardStorage implements BoardStorage {
   }
 
   setItem(): void {
+    throw this.failure;
+  }
+
+  removeItem(): void {
     throw this.failure;
   }
 }
@@ -42,18 +50,16 @@ describe("workspace storage", () => {
     expect(freshBoard).not.toBe(initialBoard);
   });
 
-  it("returns the starter workspace when storage is empty or malformed", () => {
+  it("returns the starter workspace only when storage is empty", () => {
     const storage = new MemoryBoardStorage();
-    expect(loadWorkspace(storage)).toEqual(initialWorkspace);
-    storage.setItem("super-simple-todo-board", "not-json");
-    expect(loadWorkspace(storage)).toEqual(initialWorkspace);
+    expect(loadWorkspace(storage)).toEqual({ workspace: initialWorkspace });
   });
 
   it("round-trips a valid workspace", () => {
     const storage = new MemoryBoardStorage();
     const workspace = createInitialWorkspace({ ...initialBoard, title: "Saved board" });
     saveWorkspace(storage, workspace);
-    expect(loadWorkspace(storage)).toEqual(workspace);
+    expect(loadWorkspace(storage)).toEqual({ workspace });
   });
 
   it("prefers the current workspace and migrates valid single-board data", () => {
@@ -63,20 +69,23 @@ describe("workspace storage", () => {
     storage.setItem("super-simple-todo-board", encodeCurrentWorkspace(currentWorkspace));
     storage.setItem("nimbus-kanban-board-v1", JSON.stringify(legacyBoard));
 
-    expect(loadWorkspace(storage)).toEqual(currentWorkspace);
+    expect(loadWorkspace(storage)).toEqual({ workspace: currentWorkspace });
+    expect(storage.getItem("nimbus-kanban-board-v1")).toBeNull();
     storage.setItem("super-simple-todo-board", encodeCurrentBoard(legacyBoard));
-    expect(loadWorkspace(storage)).toEqual(createInitialWorkspace(legacyBoard));
+    expect(loadWorkspace(storage)).toEqual({ workspace: createInitialWorkspace(legacyBoard) });
     expect(storage.getItem("super-simple-todo-board")).toBe(encodeCurrentWorkspace(createInitialWorkspace(legacyBoard)));
   });
 
-  it("migrates legacy storage after an invalid current value", () => {
+  it("preserves corrupt and unsupported current storage for explicit recovery", () => {
     const storage = new MemoryBoardStorage();
     const legacyBoard = { ...initialBoard, title: "Recovered board" };
     storage.setItem("super-simple-todo-board", "invalid");
     storage.setItem("nimbus-kanban-board-v1", JSON.stringify(legacyBoard));
 
-    expect(loadWorkspace(storage)).toEqual(createInitialWorkspace(legacyBoard));
-    expect(storage.getItem("super-simple-todo-board")).toBe(encodeCurrentWorkspace(createInitialWorkspace(legacyBoard)));
+    expect(loadWorkspace(storage)).toEqual({ workspace: initialWorkspace, issue: "corrupt" });
+    expect(storage.getItem("super-simple-todo-board")).toBe("invalid");
+    storage.setItem("super-simple-todo-board", JSON.stringify({ version: 4, workspace: initialWorkspace }));
+    expect(loadWorkspace(storage)).toEqual({ workspace: initialWorkspace, issue: "unsupported" });
   });
 
   it("classifies quota, unavailable, and unexpected save errors", () => {

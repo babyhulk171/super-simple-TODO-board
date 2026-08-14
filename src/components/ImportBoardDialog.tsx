@@ -1,4 +1,4 @@
-import { useRef, useState, type ChangeEvent } from "react";
+import { useEffect, useRef, useState, type ChangeEvent } from "react";
 import { importBoardJson, MAX_IMPORT_FILE_BYTES } from "../board/importers/importBoardJson";
 import type { BoardImportResult } from "../board/importers/importTypes";
 import type { KanbanBoard } from "../board/types";
@@ -11,6 +11,7 @@ interface ImportBoardDialogProps {
 
 type ImportDialogState =
   | { kind: "select" }
+  | { kind: "loading" }
   | { kind: "error"; message: string }
   | { kind: "preview"; result: BoardImportResult };
 
@@ -63,10 +64,12 @@ export function ImportBoardDialog({ onImport, onClose }: ImportBoardDialogProps)
   const selectFile = (file: File) => {
     const requestId = latestFileRequest.current + 1;
     latestFileRequest.current = requestId;
+    setState({ kind: "loading" });
     void readImportFile(file).then((nextState) => {
       if (requestId === latestFileRequest.current) setState(nextState);
     });
   };
+  useEffect(() => () => { latestFileRequest.current += 1; }, []);
   const confirmImport = () => {
     if (state.kind !== "preview") return;
     onImport(state.result.board);
@@ -76,6 +79,7 @@ export function ImportBoardDialog({ onImport, onClose }: ImportBoardDialogProps)
       <div className="import-dialog">
         <ImportFilePicker onSelected={selectFile} />
         <small>Maximum file size: {formatFileSizeLimit()}</small>
+        {state.kind === "loading" && <p role="status">Reading board file…</p>}
         {state.kind === "error" && <p className="import-error" role="alert">{state.message}</p>}
         {state.kind === "preview" && <ImportPreview result={state.result} />}
         <div className="dialog-actions import-dialog-actions"><span /><button className="quiet-button" type="button" onClick={onClose}>Cancel</button>{state.kind === "preview" && <button className="primary-button" type="button" onClick={confirmImport}>Replace board</button>}</div>

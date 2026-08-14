@@ -8,8 +8,7 @@ export function findCardColumn(board: KanbanBoard, cardId: string): KanbanColumn
 
 /** Finds a card by id. Example: `findBoardCard(board, "card-1")`. */
 export function findBoardCard(board: KanbanBoard, cardId: string): KanbanCard | undefined {
-  const matchingCard = board.cards[cardId];
-  return matchingCard;
+  return Object.hasOwn(board.cards, cardId) ? board.cards[cardId] : undefined;
 }
 
 /** Finds a column by id. Example: `findBoardColumn(board, "planned")`. */

@@ -76,6 +76,18 @@ describe("boardReducer", () => {
     expect(missingCard).toBe(initialBoard);
   });
 
+  it("rejects unsafe identifiers before they can become board map keys", () => {
+    const unsafeCard: KanbanCard = { ...newCard, id: "__proto__" };
+    const unsafeColumn: KanbanColumn = { ...newColumn, id: "constructor" };
+
+    expect(boardReducer(initialBoard, { type: "add-card", columnId: "planned", card: unsafeCard })).toBe(initialBoard);
+    expect(boardReducer(initialBoard, { type: "add-column", column: unsafeColumn })).toBe(initialBoard);
+  });
+
+  it("ignores titles beyond the persisted board limit", () => {
+    expect(boardReducer(initialBoard, { type: "rename-board", title: "x".repeat(91) })).toBe(initialBoard);
+  });
+
   it("restores a supplied board", () => {
     const result = boardReducer(initialBoard, { type: "reset-board", board: { ...initialBoard, title: "Restored" } });
     expect(result.title).toBe("Restored");

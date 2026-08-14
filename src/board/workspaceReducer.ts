@@ -1,4 +1,5 @@
 import { boardReducer } from "./boardReducer";
+import { MAX_WORKSPACE_BOARDS, isSafeIdentifier } from "./boardLimits";
 import type { KanbanWorkspace, WorkspaceAction, WorkspaceBoard } from "./workspaceTypes";
 
 function hasBoard(workspace: KanbanWorkspace, boardId: string): boolean {
@@ -11,7 +12,7 @@ function selectBoard(workspace: KanbanWorkspace, boardId: string): KanbanWorkspa
 }
 
 function addBoard(workspace: KanbanWorkspace, board: WorkspaceBoard): KanbanWorkspace {
-  if (hasBoard(workspace, board.id)) return workspace;
+  if (!isSafeIdentifier(board.id) || workspace.boards.length >= MAX_WORKSPACE_BOARDS || hasBoard(workspace, board.id)) return workspace;
   return { activeBoardId: board.id, boards: [...workspace.boards, board] };
 }
 

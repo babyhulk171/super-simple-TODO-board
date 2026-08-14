@@ -30,6 +30,10 @@ npm run lint
 npm run build
 ```
 
+## Data and privacy
+
+Boards are stored as plaintext in this browser profile and are never sent to a server. Avoid storing sensitive information on shared devices, export important boards regularly, and clear this site's browser data when you no longer need it.
+
 ## GitHub Pages
 
 Push the project to a GitHub repository with `main` as its default branch. In the repository settings, open **Pages** and set **Source** to **GitHub Actions**. The included workflow publishes every push to `main`.

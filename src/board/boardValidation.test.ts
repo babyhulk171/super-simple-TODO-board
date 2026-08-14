@@ -42,4 +42,14 @@ describe("parseBoard", () => {
     expect(parseBoard(missingCard)).toBeUndefined();
     expect(parseBoard(orphanCard)).toBeUndefined();
   });
+
+  it("rejects unsafe identifiers and unbounded text", () => {
+    const prototypeCard = JSON.parse('{"title":"Release board","columns":[{"id":"planned","title":"Planned","tone":"blue","cardIds":["__proto__"]}],"cards":{"__proto__":{"id":"__proto__","title":"Unsafe","details":"","priority":"low","completed":false}}}');
+    const longTitle = { ...validBoard, title: "x".repeat(91) };
+    const longDetails = { ...validBoard, cards: { release: { ...validBoard.cards.release, details: "x".repeat(321) } } };
+
+    expect(parseBoard(prototypeCard)).toBeUndefined();
+    expect(parseBoard(longTitle)).toBeUndefined();
+    expect(parseBoard(longDetails)).toBeUndefined();
+  });
 });

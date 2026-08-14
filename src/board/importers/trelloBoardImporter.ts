@@ -60,6 +60,7 @@ function readArray(record: Record<string, unknown>, key: string): unknown[] {
 function parseTrelloSource(value: unknown): TrelloSource | undefined {
   if (!isJsonRecord(value) || typeof value.name !== "string") return undefined;
   if (!Array.isArray(value.lists) || !Array.isArray(value.cards)) return undefined;
+  if (value.lists.length > MAX_COLUMNS_PER_BOARD || value.cards.length > MAX_CARDS_PER_BOARD) return undefined;
   return {
     name: value.name,
     lists: value.lists,
@@ -280,7 +281,8 @@ function convertTrelloBoard(value: unknown, context: BoardImportContext): BoardI
   const stats = createImportStats();
   const convertedLists = convertTrelloLists(source, context, stats);
   const cards = convertTrelloCards(source, convertedLists, context, stats);
-  const board: KanbanBoard = { title: source.name.trim() || "Imported Trello board", columns: convertedLists.columns, cards };
+  const title = normalizeImportedText(source.name, MAX_BOARD_TITLE_LENGTH, "Imported Trello board");
+  const board: KanbanBoard = { title: title.text, columns: convertedLists.columns, cards };
   return {
     source: "trello",
     sourceLabel: "Trello",
@@ -294,3 +296,4 @@ export const trelloBoardImporter: BoardImportAdapter = {
   canImport: (value) => Boolean(parseTrelloSource(value)),
   convert: convertTrelloBoard,
 };
+import { MAX_BOARD_TITLE_LENGTH, MAX_CARDS_PER_BOARD, MAX_COLUMNS_PER_BOARD } from "../boardLimits";

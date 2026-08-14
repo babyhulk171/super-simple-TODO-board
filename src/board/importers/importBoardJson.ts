@@ -4,7 +4,7 @@ import { trelloBoardImporter } from "./trelloBoardImporter";
 import type { BoardImportAdapter, BoardImportContext, BoardImportConversion, BoardImportOutcome } from "./importTypes";
 import { countBoardCards } from "./importUtilities";
 
-export const MAX_IMPORT_FILE_BYTES = 10 * 1024 * 1024;
+export const MAX_IMPORT_FILE_BYTES = 2 * 1024 * 1024;
 
 const IMPORT_ADAPTERS: BoardImportAdapter[] = [nativeBoardImporter, trelloBoardImporter];
 

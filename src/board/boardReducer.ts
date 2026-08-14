@@ -1,8 +1,9 @@
 import { relocateCardId } from "./cardPlacement";
+import { MAX_BOARD_TITLE_LENGTH, MAX_CARDS_PER_BOARD, MAX_CARDS_PER_COLUMN, MAX_COLUMNS_PER_BOARD, isSafeIdentifier } from "./boardLimits";
 import type { BoardAction, KanbanBoard, KanbanCard, KanbanColumn } from "./types";
 
 function addColumn(board: KanbanBoard, column: KanbanColumn): KanbanBoard {
-  if (board.columns.some((existingColumn) => existingColumn.id === column.id)) return board;
+  if (!isSafeIdentifier(column.id) || board.columns.length >= MAX_COLUMNS_PER_BOARD || board.columns.some((existingColumn) => existingColumn.id === column.id)) return board;
   return { ...board, columns: [...board.columns, column] };
 }
 
@@ -22,7 +23,8 @@ function deleteColumn(board: KanbanBoard, columnId: string): KanbanBoard {
 }
 
 function addCard(board: KanbanBoard, columnId: string, card: KanbanCard): KanbanBoard {
-  if (!board.columns.some((column) => column.id === columnId) || board.cards[card.id]) return board;
+  const column = board.columns.find((candidate) => candidate.id === columnId);
+  if (!isSafeIdentifier(card.id) || !column || column.cardIds.length >= MAX_CARDS_PER_COLUMN || Object.keys(board.cards).length >= MAX_CARDS_PER_BOARD || Object.hasOwn(board.cards, card.id)) return board;
   const columns = board.columns.map((column) => column.id === columnId
     ? { ...column, cardIds: [...column.cardIds, card.id] }
     : column);
@@ -30,12 +32,12 @@ function addCard(board: KanbanBoard, columnId: string, card: KanbanCard): Kanban
 }
 
 function updateCard(board: KanbanBoard, card: KanbanCard): KanbanBoard {
-  if (!board.cards[card.id]) return board;
+  if (!isSafeIdentifier(card.id) || !Object.hasOwn(board.cards, card.id)) return board;
   return { ...board, cards: { ...board.cards, [card.id]: card } };
 }
 
 function deleteCard(board: KanbanBoard, cardId: string): KanbanBoard {
-  if (!board.cards[cardId]) return board;
+  if (!isSafeIdentifier(cardId) || !Object.hasOwn(board.cards, cardId)) return board;
   const { [cardId]: removedCard, ...cards } = board.cards;
   void removedCard;
   const columns = board.columns.map((column) => ({ ...column, cardIds: column.cardIds.filter((id) => id !== cardId) }));
@@ -43,13 +45,13 @@ function deleteCard(board: KanbanBoard, cardId: string): KanbanBoard {
 }
 
 function toggleCard(board: KanbanBoard, cardId: string): KanbanBoard {
-  const card = board.cards[cardId];
+  const card = Object.hasOwn(board.cards, cardId) ? board.cards[cardId] : undefined;
   if (!card) return board;
   return updateCard(board, { ...card, completed: !card.completed });
 }
 
 function moveCard(board: KanbanBoard, action: Extract<BoardAction, { type: "move-card" }>): KanbanBoard {
-  if (!board.cards[action.cardId]) return board;
+  if (!isSafeIdentifier(action.cardId) || !Object.hasOwn(board.cards, action.cardId)) return board;
   const target = board.columns.find((column) => column.id === action.toColumnId);
   if (!target) return board;
   const targetCardIds = target.cardIds.filter((cardId) => cardId !== action.cardId);
@@ -74,7 +76,7 @@ function reorderColumn(board: KanbanBoard, columnId: string, overColumnId: strin
 /** Applies one immutable board change. Example: `boardReducer(board, { type: "rename-board", title: "Roadmap" })`. */
 export function boardReducer(board: KanbanBoard, action: BoardAction): KanbanBoard {
   switch (action.type) {
-    case "rename-board": return { ...board, title: action.title };
+    case "rename-board": return action.title.length <= MAX_BOARD_TITLE_LENGTH ? { ...board, title: action.title } : board;
     case "add-column": return addColumn(board, action.column);
     case "update-column": return updateColumn(board, action);
     case "delete-column": return deleteColumn(board, action.columnId);

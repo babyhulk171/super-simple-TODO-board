@@ -12,5 +12,6 @@ describe("parseWorkspace", () => {
     expect(parseWorkspace({ ...initialWorkspace, activeBoardId: "missing" })).toBeUndefined();
     expect(parseWorkspace({ ...initialWorkspace, boards: [initialWorkspace.boards[0], initialWorkspace.boards[0] as typeof initialWorkspace.boards[number]] })).toBeUndefined();
     expect(parseWorkspace({ ...initialWorkspace, boards: [{ id: "starter", board: { title: "Broken" } }] })).toBeUndefined();
+    expect(parseWorkspace({ ...initialWorkspace, activeBoardId: "constructor" })).toBeUndefined();
   });
 });

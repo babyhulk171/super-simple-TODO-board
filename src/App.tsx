@@ -12,7 +12,7 @@ import "./styles.css";
 
 /** Composes the complete local-first Kanban app. Example: `createRoot(node).render(<App />)`. */
 export default function App() {
-  const [workspace, dispatchWorkspace, saveStatus] = usePersistentWorkspace();
+  const [workspace, dispatchWorkspace, saveStatus, storageIssue, replaceInvalidStorage] = usePersistentWorkspace();
   const [theme, toggleTheme] = useTheme();
   const [editor, setEditor] = useState<EditorState>(null);
   const closeEditor = useCallback(() => setEditor(null), []);
@@ -32,6 +32,9 @@ export default function App() {
     closeEditor();
     dispatchWorkspace({ type: "delete-board", boardId: activeBoard.id });
   };
+  const replaceStoredWorkspace = () => {
+    if (window.confirm("Replace the unreadable saved workspace with the boards currently on screen?")) replaceInvalidStorage();
+  };
   const resetBoard = () => window.confirm("Reset this board to the starter content?") && dispatchBoard({ type: "reset-board", board: createInitialBoard() });
   const openNewCard = (columnId: string) => setEditor({ kind: "new-card", columnId });
   const openCard = (cardId: string) => setEditor({ kind: "card", cardId });
@@ -47,7 +50,7 @@ export default function App() {
   const editedColumn = editor?.kind === "column" ? findBoardColumn(activeBoard.board, editor.columnId) : undefined;
   return (
     <div className="app-frame">
-      <BoardView key={activeBoard.id} board={activeBoard.board} theme={theme} saveStatus={saveStatus} dispatch={dispatchBoard} onToggleTheme={toggleTheme} onReset={resetBoard} onImportBoard={openBoardImport} onAddCard={openNewCard} onEditCard={openCard} onAddColumn={openNewColumn} onEditColumn={openColumn} activeBoardId={activeBoard.id} boards={workspace.boards} onSelectBoard={selectBoard} onCreateBoard={createBoard} onDeleteBoard={deleteBoard} />
+      <BoardView key={activeBoard.id} board={activeBoard.board} theme={theme} saveStatus={saveStatus} storageIssue={storageIssue} dispatch={dispatchBoard} onToggleTheme={toggleTheme} onReset={resetBoard} onImportBoard={openBoardImport} onReplaceStoredWorkspace={replaceStoredWorkspace} onAddCard={openNewCard} onEditCard={openCard} onAddColumn={openNewColumn} onEditColumn={openColumn} activeBoardId={activeBoard.id} boards={workspace.boards} onSelectBoard={selectBoard} onCreateBoard={createBoard} onDeleteBoard={deleteBoard} />
       {(editor?.kind === "new-card" || editedCard) && cardColumnId && <CardDialog card={editedCard} columnId={cardColumnId} dispatch={dispatchBoard} onClose={closeEditor} />}
       {(editor?.kind === "new-column" || editedColumn) && <ColumnDialog column={editedColumn} dispatch={dispatchBoard} onClose={closeEditor} />}
       {editor?.kind === "import-board" && <ImportBoardDialog onImport={replaceBoard} onClose={closeEditor} />}
