@@ -9,6 +9,8 @@ A small, customizable Kanban board built with React, TypeScript, Vite, and dnd-k
 - Move cards with pointer, touch, or keyboard controls
 - Rename the board and choose list accent colors
 - Light and dark themes
+- Create, switch, and delete locally persisted boards
+- Export the active board as portable JSON
 - Automatic local persistence
 - Responsive horizontal board layout
 - Static build ready for GitHub Pages

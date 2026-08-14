@@ -8,13 +8,22 @@
   }
 
   .board-controls {
+    flex-wrap: wrap;
     gap: 10px;
     margin-bottom: 12px;
     padding: 0 16px;
   }
 
   .board-name input {
-    width: min(48vw, 220px);
+    width: min(32vw, 150px);
+  }
+
+  .board-name {
+    width: 100%;
+  }
+
+  .board-switcher select {
+    max-width: 104px;
   }
 
   .save-note,
@@ -28,7 +37,7 @@
   }
 
   .kanban-column {
-    max-height: calc(100vh - 82px);
+    max-height: calc(100dvh - 126px);
   }
 
   .dialog-card {

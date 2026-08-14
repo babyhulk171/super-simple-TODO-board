@@ -1,6 +1,7 @@
-import { initialBoard } from "./initialBoard";
-import { decodeCurrentBoard, decodeLegacyBoard, encodeCurrentBoard } from "./boardMigrations";
-import type { KanbanBoard } from "./types";
+import { createInitialWorkspace, initialWorkspace } from "./initialWorkspace";
+import { decodeCurrentBoard, decodeLegacyBoard } from "./boardMigrations";
+import type { KanbanWorkspace } from "./workspaceTypes";
+import { decodeCurrentWorkspace, encodeCurrentWorkspace } from "./workspaceMigrations";
 
 const BOARD_KEY = "super-simple-todo-board";
 const LEGACY_BOARD_KEY = "nimbus-kanban-board-v1";
@@ -29,27 +30,42 @@ function classifySaveFailure(error: unknown): SaveBoardResult {
   return { saved: false, reason: "unknown" };
 }
 
-function loadLegacyBoard(storage: BoardStorage): KanbanBoard | undefined {
+function loadLegacyBoard(storage: BoardStorage): KanbanWorkspace | undefined {
   const legacyValue = readStoredValue(storage, LEGACY_BOARD_KEY);
   if (!legacyValue) return undefined;
   const legacyBoard = decodeLegacyBoard(legacyValue);
   if (!legacyBoard) return undefined;
-  saveBoard(storage, legacyBoard);
-  return legacyBoard;
+  return createInitialWorkspace(legacyBoard);
 }
 
-/** Reads a valid saved board or returns the starter board. Example: `loadBoard(window.localStorage)`. */
-export function loadBoard(storage: BoardStorage): KanbanBoard {
+function migrateLegacyWorkspace(storage: BoardStorage): KanbanWorkspace | undefined {
+  const workspace = loadLegacyBoard(storage);
+  if (!workspace) return undefined;
+  saveWorkspace(storage, workspace);
+  return workspace;
+}
+
+function migrateBoard(storage: BoardStorage, serializedBoard: string): KanbanWorkspace | undefined {
+  const board = decodeCurrentBoard(serializedBoard);
+  if (!board) return undefined;
+  const workspace = createInitialWorkspace(board);
+  saveWorkspace(storage, workspace);
+  return workspace;
+}
+
+/** Reads a valid saved workspace or returns the starter workspace. Example: `loadWorkspace(window.localStorage)`. */
+export function loadWorkspace(storage: BoardStorage): KanbanWorkspace {
   const storedValue = readStoredValue(storage, BOARD_KEY);
-  const storedBoard = storedValue ? decodeCurrentBoard(storedValue) : undefined;
-  if (storedBoard) return storedBoard;
-  return loadLegacyBoard(storage) ?? initialBoard;
+  const workspace = storedValue ? decodeCurrentWorkspace(storedValue) : undefined;
+  if (workspace) return workspace;
+  if (storedValue) return migrateBoard(storage, storedValue) ?? migrateLegacyWorkspace(storage) ?? initialWorkspace;
+  return migrateLegacyWorkspace(storage) ?? initialWorkspace;
 }
 
-/** Persists a board without interrupting the UI on storage errors. Example: `saveBoard(localStorage, board)`. */
-export function saveBoard(storage: BoardStorage, board: KanbanBoard): SaveBoardResult {
+/** Persists a workspace without interrupting the UI on storage errors. Example: `saveWorkspace(localStorage, workspace)`. */
+export function saveWorkspace(storage: BoardStorage, workspace: KanbanWorkspace): SaveBoardResult {
   try {
-    storage.setItem(BOARD_KEY, encodeCurrentBoard(board));
+    storage.setItem(BOARD_KEY, encodeCurrentWorkspace(workspace));
     return { saved: true };
   } catch (error: unknown) {
     // The board remains usable when storage is blocked or full.

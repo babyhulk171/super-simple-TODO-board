@@ -5,6 +5,7 @@ import type { BoardSaveStatus } from "../board/hooks";
 import { findBoardCard } from "../board/selectors";
 import type { BoardAction, KanbanBoard, Theme } from "../board/types";
 import { useBoardDnd } from "../board/useBoardDnd";
+import type { WorkspaceBoard } from "../board/workspaceTypes";
 import { BoardControls } from "./BoardControls";
 import { CardDragPreview } from "./CardDragPreview";
 import { KanbanColumnView } from "./KanbanColumnView";
@@ -21,6 +22,11 @@ interface BoardViewProps {
   onEditCard: (cardId: string) => void;
   onAddColumn: () => void;
   onEditColumn: (columnId: string) => void;
+  activeBoardId: string;
+  boards: WorkspaceBoard[];
+  onSelectBoard: (boardId: string) => void;
+  onCreateBoard: () => void;
+  onDeleteBoard: () => void;
 }
 
 interface BoardTrackProps extends Pick<BoardViewProps, "dispatch" | "onAddCard" | "onEditCard" | "onAddColumn" | "onEditColumn"> {
@@ -46,7 +52,7 @@ export function BoardView(props: BoardViewProps) {
   return (
     <DndContext sensors={dnd.sensors} collisionDetection={boardCollisionDetection} onDragStart={dnd.onDragStart} onDragOver={dnd.onDragOver} onDragEnd={dnd.onDragEnd} onDragCancel={dnd.onDragCancel}>
       <main className="board-shell" id="board">
-        <BoardControls title={board.title} theme={theme} saveStatus={saveStatus} dispatch={dispatch} onToggleTheme={onToggleTheme} onReset={onReset} onImportBoard={onImportBoard} />
+        <BoardControls title={board.title} board={board} theme={theme} saveStatus={saveStatus} dispatch={dispatch} onToggleTheme={onToggleTheme} onReset={onReset} onImportBoard={onImportBoard} activeBoardId={props.activeBoardId} boards={props.boards} onSelectBoard={props.onSelectBoard} onCreateBoard={props.onCreateBoard} onDeleteBoard={props.onDeleteBoard} />
         <BoardTrack {...props} board={dnd.projectedBoard} />
       </main>
       <DragOverlay>{activeCard && <CardDragPreview card={activeCard} />}</DragOverlay>

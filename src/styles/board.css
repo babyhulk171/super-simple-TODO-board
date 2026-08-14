@@ -34,7 +34,8 @@
 }
 
 .board-name input {
-  width: min(280px, 44vw);
+  min-width: 0;
+  width: min(220px, 30vw);
   padding: 7px 8px;
   border: 1px solid transparent;
   border-radius: 5px;
@@ -55,6 +56,34 @@
   margin-right: 4px;
   color: var(--text-soft);
   font-size: 11px;
+}
+
+.board-switcher {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  gap: 4px;
+}
+
+.board-switcher select {
+  min-width: 0;
+  max-width: 160px;
+  height: 34px;
+  padding: 0 26px 0 8px;
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  color: var(--text);
+  background: var(--surface);
+  font-size: 12px;
+  font-weight: 700;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.board-switcher .small-icon:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
 }
 
 .save-note.is-error {

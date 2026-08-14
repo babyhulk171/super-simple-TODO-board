@@ -32,10 +32,33 @@ describe("App", () => {
     expect(document.documentElement.dataset.theme).toBe("dark");
     expect(localStorage.getItem("super-simple-todo-theme")).toBe("dark");
     await waitFor(() => {
-      const savedBoard = JSON.parse(localStorage.getItem("super-simple-todo-board") ?? "") as { board: { title: string; cards: Record<string, { completed: boolean; priority: string; title: string }> } };
-      expect(savedBoard.board.title).toBe("Launch board");
-      expect(Object.values(savedBoard.board.cards)).toEqual([expect.objectContaining({ title: "Ship release", priority: "high", completed: true })]);
+      const savedWorkspace = JSON.parse(localStorage.getItem("super-simple-todo-board") ?? "") as { workspace: { boards: Array<{ board: { title: string; cards: Record<string, { completed: boolean; priority: string; title: string }> } }> } };
+      expect(savedWorkspace.workspace.boards[0].board.title).toBe("Launch board");
+      expect(Object.values(savedWorkspace.workspace.boards[0].board.cards)).toEqual([expect.objectContaining({ title: "Ship release", priority: "high", completed: true })]);
     });
+  });
+
+  it("keeps board content isolated while switching between persisted boards", async () => {
+    const user = userEvent.setup();
+    render(<App />);
+    let boardSelect = screen.getByLabelText("Choose board");
+
+    await user.click(screen.getByRole("button", { name: "New" }));
+    boardSelect = screen.getByLabelText("Choose board");
+    await user.clear(screen.getByLabelText("Board title"));
+    await user.type(screen.getByLabelText("Board title"), "Work board");
+    await user.click(screen.getAllByRole("button", { name: "Add a card" })[0]);
+    await user.selectOptions(boardSelect, "starter");
+
+    expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+    expect(screen.getByLabelText("Board title")).toHaveValue("Super Simple TODO");
+    boardSelect = screen.getByLabelText("Choose board");
+    const workBoardOption = screen.getByRole("option", { name: "Work board" }) as HTMLOptionElement;
+    await user.selectOptions(boardSelect, workBoardOption.value);
+    expect(screen.getByLabelText("Board title")).toHaveValue("Work board");
+    await waitFor(() => expect(JSON.parse(localStorage.getItem("super-simple-todo-board") ?? "")).toMatchObject({
+      workspace: { activeBoardId: (boardSelect as HTMLSelectElement).value, boards: expect.any(Array) },
+    }));
   });
 
   it("creates, edits, and deletes a list only after confirmation", async () => {

@@ -18,22 +18,28 @@ test("persists a completed card and theme after a reload", async ({ page }) => {
 });
 
 test("moves a card to another list and persists its new location", async ({ page }) => {
-  const serializedBoard = JSON.stringify({
-    version: 2,
-    board: {
-      title: "Drag board",
-      columns: [
-        { id: "planned", title: "Planned", tone: "blue", cardIds: ["first"] },
-        { id: "done", title: "Done", tone: "green", cardIds: [] },
-      ],
-      cards: {
-        first: { id: "first", title: "First task", details: "", priority: "medium", completed: false },
-      },
+  const serializedWorkspace = JSON.stringify({
+    version: 3,
+    workspace: {
+      activeBoardId: "drag",
+      boards: [{
+        id: "drag",
+        board: {
+          title: "Drag board",
+          columns: [
+            { id: "planned", title: "Planned", tone: "blue", cardIds: ["first"] },
+            { id: "done", title: "Done", tone: "green", cardIds: [] },
+          ],
+          cards: {
+            first: { id: "first", title: "First task", details: "", priority: "medium", completed: false },
+          },
+        },
+      }],
     },
   });
   await page.addInitScript((board) => {
     if (!localStorage.getItem("super-simple-todo-board")) localStorage.setItem("super-simple-todo-board", board);
-  }, serializedBoard);
+  }, serializedWorkspace);
   await page.goto("/");
   const doneColumn = page.locator("section.kanban-column").filter({ has: page.getByRole("heading", { name: "Done" }) });
 
@@ -50,10 +56,37 @@ test("moves a card to another list and persists its new location", async ({ page
   await expect.poll(() => page.evaluate(() => {
     const serializedBoard = localStorage.getItem("super-simple-todo-board");
     if (!serializedBoard) return [];
-    const board = JSON.parse(serializedBoard) as { board: { columns: Array<{ id: string; cardIds: string[] }> } };
-    return board.board.columns.find((column) => column.id === "done")?.cardIds;
+    const workspace = JSON.parse(serializedBoard) as { workspace: { boards: Array<{ board: { columns: Array<{ id: string; cardIds: string[] }> } }> } };
+    return workspace.workspace.boards[0].board.columns.find((column) => column.id === "done")?.cardIds;
   })).toEqual(["first"]);
   await page.reload();
 
   await expect(doneColumn.getByText("First task", { exact: true })).toBeVisible();
+});
+
+test("creates, switches, and restores the selected board", async ({ page }) => {
+  await page.goto("/");
+  await page.getByRole("button", { name: "New" }).click();
+  await page.getByLabel("Board title").fill("Work board");
+  const boardSelect = page.getByLabel("Choose board");
+  const workBoardId = await boardSelect.inputValue();
+
+  await boardSelect.selectOption("starter");
+  await expect(page.getByLabel("Board title")).toHaveValue("Super Simple TODO");
+  await boardSelect.selectOption(workBoardId);
+  await page.reload();
+
+  await expect(boardSelect).toHaveValue(workBoardId);
+  await expect(page.getByLabel("Board title")).toHaveValue("Work board");
+});
+
+test("exports the active board as a native JSON file", async ({ page }) => {
+  await page.goto("/");
+  await page.getByLabel("Board title").fill("Release board");
+  const downloadPromise = page.waitForEvent("download");
+
+  await page.getByRole("button", { name: "Export" }).click();
+  const download = await downloadPromise;
+
+  expect(download.suggestedFilename()).toBe("release-board.json");
 });

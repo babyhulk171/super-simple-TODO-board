@@ -1,7 +1,8 @@
 import { useCallback, useEffect, useMemo, useReducer, useState } from "react";
-import { boardReducer } from "./boardReducer";
-import { loadBoard, saveBoard, type BoardStorage } from "./storage";
-import type { BoardAction, KanbanBoard, Theme } from "./types";
+import { loadWorkspace, saveWorkspace, type BoardStorage } from "./storage";
+import type { Theme } from "./types";
+import { workspaceReducer } from "./workspaceReducer";
+import type { KanbanWorkspace, WorkspaceAction } from "./workspaceTypes";
 
 const THEME_KEY = "super-simple-todo-theme";
 const LEGACY_THEME_KEY = "nimbus-theme";
@@ -57,17 +58,17 @@ function applyThemeToDocument(theme: Theme): void {
   if (themeColor) themeColor.content = theme === "dark" ? "#11151a" : "#fbfcfe";
 }
 
-/** Keeps board changes on this device. Example: `const [board, dispatch] = usePersistentBoard()`. */
-export function usePersistentBoard(): [KanbanBoard, React.Dispatch<BoardAction>, BoardSaveStatus] {
+/** Keeps workspace changes on this device. Example: `const [workspace, dispatch] = usePersistentWorkspace()`. */
+export function usePersistentWorkspace(): [KanbanWorkspace, React.Dispatch<WorkspaceAction>, BoardSaveStatus] {
   const storage = useMemo(() => getBoardStorage(), []);
-  const [board, dispatch] = useReducer(boardReducer, storage, loadBoard);
+  const [workspace, dispatch] = useReducer(workspaceReducer, storage, loadWorkspace);
   const [saveStatus, setSaveStatus] = useState<BoardSaveStatus>("saved");
   useEffect(() => {
-    const saveResult = saveBoard(storage, board);
+    const saveResult = saveWorkspace(storage, workspace);
     const statusUpdate = window.setTimeout(() => setSaveStatus(saveResult.saved ? "saved" : "error"), 0);
     return () => window.clearTimeout(statusUpdate);
-  }, [board, storage]);
-  return [board, dispatch, saveStatus];
+  }, [storage, workspace]);
+  return [workspace, dispatch, saveStatus];
 }
 
 /** Controls the saved color theme. Example: `const [theme, toggle] = useTheme()`. */
