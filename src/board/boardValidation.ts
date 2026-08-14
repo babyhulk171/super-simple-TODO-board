@@ -1,7 +1,4 @@
-import type { CardPriority, ColumnTone, KanbanBoard, KanbanCard, KanbanCardMap, KanbanColumn } from "./types";
-
-const COLUMN_TONES = new Set<ColumnTone>(["blue", "violet", "amber", "green", "rose"]);
-const CARD_PRIORITIES = new Set<CardPriority>(["low", "medium", "high"]);
+import { isCardPriority, isColumnTone, type KanbanBoard, type KanbanCard, type KanbanCardMap, type KanbanColumn } from "./types";
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   if (!value || typeof value !== "object") return false;
@@ -11,13 +8,12 @@ function isRecord(value: unknown): value is Record<string, unknown> {
 function parseStoredCard(cardId: string, value: unknown): KanbanCard | undefined {
   if (!isRecord(value) || value.id !== cardId) return undefined;
   if (typeof value.title !== "string" || typeof value.details !== "string") return undefined;
-  if (typeof value.completed !== "boolean" || typeof value.priority !== "string") return undefined;
-  if (!CARD_PRIORITIES.has(value.priority as CardPriority)) return undefined;
+  if (typeof value.completed !== "boolean" || !isCardPriority(value.priority)) return undefined;
   return {
     id: cardId,
     title: value.title,
     details: value.details,
-    priority: value.priority as CardPriority,
+    priority: value.priority,
     completed: value.completed,
   };
 }
@@ -25,12 +21,12 @@ function parseStoredCard(cardId: string, value: unknown): KanbanCard | undefined
 function parseStoredColumn(value: unknown): KanbanColumn | undefined {
   if (!isRecord(value)) return undefined;
   if (typeof value.id !== "string" || typeof value.title !== "string") return undefined;
-  if (typeof value.tone !== "string" || !COLUMN_TONES.has(value.tone as ColumnTone)) return undefined;
+  if (!isColumnTone(value.tone)) return undefined;
   if (!Array.isArray(value.cardIds) || !value.cardIds.every((cardId) => typeof cardId === "string")) return undefined;
   return {
     id: value.id,
     title: value.title,
-    tone: value.tone as ColumnTone,
+    tone: value.tone,
     cardIds: [...value.cardIds],
   };
 }

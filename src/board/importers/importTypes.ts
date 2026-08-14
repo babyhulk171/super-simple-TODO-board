@@ -13,12 +13,15 @@ export interface BoardImportSummary {
   cards: number;
 }
 
-export interface BoardImportResult {
+export interface BoardImportConversion {
   source: BoardImportSource;
   sourceLabel: string;
   board: KanbanBoard;
-  summary: BoardImportSummary;
   warnings: BoardImportWarning[];
+}
+
+export interface BoardImportResult extends BoardImportConversion {
+  summary: BoardImportSummary;
 }
 
 export interface BoardImportContext {
@@ -28,7 +31,7 @@ export interface BoardImportContext {
 export interface BoardImportAdapter {
   source: BoardImportSource;
   canImport: (value: unknown) => boolean;
-  convert: (value: unknown, context: BoardImportContext) => BoardImportResult | undefined;
+  convert: (value: unknown, context: BoardImportContext) => BoardImportConversion | undefined;
 }
 
 export type BoardImportOutcome =

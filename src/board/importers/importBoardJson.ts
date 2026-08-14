@@ -1,7 +1,7 @@
 import { parseBoard } from "../boardValidation";
 import { nativeBoardImporter } from "./nativeBoardImporter";
 import { trelloBoardImporter } from "./trelloBoardImporter";
-import type { BoardImportAdapter, BoardImportContext, BoardImportOutcome, BoardImportResult } from "./importTypes";
+import type { BoardImportAdapter, BoardImportContext, BoardImportConversion, BoardImportOutcome } from "./importTypes";
 import { countBoardCards } from "./importUtilities";
 
 export const MAX_IMPORT_FILE_BYTES = 10 * 1024 * 1024;
@@ -22,12 +22,12 @@ function findImportAdapter(value: unknown): BoardImportAdapter | undefined {
   return matchingAdapter;
 }
 
-function validateImportResult(result: BoardImportResult): BoardImportOutcome {
-  const board = parseBoard(result.board);
+function validateImportResult(conversion: BoardImportConversion): BoardImportOutcome {
+  const board = parseBoard(conversion.board);
   if (!board) return { ok: false, message: "Converted board was invalid; expected unique columns and cards assigned to exactly one column." };
   return {
     ok: true,
-    result: { ...result, board, summary: { columns: board.columns.length, cards: countBoardCards(board) } },
+    result: { ...conversion, board, summary: { columns: board.columns.length, cards: countBoardCards(board) } },
   };
 }
 

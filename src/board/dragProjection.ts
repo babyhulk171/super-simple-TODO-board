@@ -1,4 +1,5 @@
-import { findBoardColumn } from "./selectors";
+import { relocateCardId } from "./cardPlacement";
+import { findBoardColumn, findCardColumn } from "./selectors";
 import type { BoardDragEntity } from "./dragTypes";
 import type { KanbanBoard, KanbanColumn } from "./types";
 
@@ -31,17 +32,11 @@ export function calculateCardProjection(board: KanbanBoard, cardId: string, targ
   return { cardId, targetColumnId: targetColumn.id, targetIndex };
 }
 
-function insertProjectedCard(column: KanbanColumn, projection: CardDragProjection): KanbanColumn {
-  const cardIds = column.cardIds.filter((cardId) => cardId !== projection.cardId);
-  if (column.id !== projection.targetColumnId) return { ...column, cardIds };
-  const targetIndex = Math.min(Math.max(projection.targetIndex, 0), cardIds.length);
-  cardIds.splice(targetIndex, 0, projection.cardId);
-  return { ...column, cardIds };
-}
-
 /** Builds an ephemeral board for live drag feedback. Example: `projectCardPosition(board, projection)`. */
 export function projectCardPosition(board: KanbanBoard, projection: CardDragProjection | null): KanbanBoard {
   if (!projection) return board;
-  const columns = board.columns.map((column) => insertProjectedCard(column, projection));
+  if (!board.cards[projection.cardId] || !findCardColumn(board, projection.cardId)) return board;
+  const columns = relocateCardId(board.columns, projection.cardId, projection.targetColumnId, projection.targetIndex);
+  if (!columns) return board;
   return { ...board, columns };
 }

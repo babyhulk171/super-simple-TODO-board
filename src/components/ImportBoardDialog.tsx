@@ -1,4 +1,4 @@
-import { useState, type ChangeEvent } from "react";
+import { useRef, useState, type ChangeEvent } from "react";
 import { importBoardJson, MAX_IMPORT_FILE_BYTES } from "../board/importers/importBoardJson";
 import type { BoardImportResult } from "../board/importers/importTypes";
 import type { KanbanBoard } from "../board/types";
@@ -59,8 +59,13 @@ function ImportPreview({ result }: { result: BoardImportResult }) {
 /** Previews and confirms a supported JSON board import. Example: `<ImportBoardDialog onImport={replaceBoard} />`. */
 export function ImportBoardDialog({ onImport, onClose }: ImportBoardDialogProps) {
   const [state, setState] = useState<ImportDialogState>({ kind: "select" });
+  const latestFileRequest = useRef(0);
   const selectFile = (file: File) => {
-    void readImportFile(file).then(setState);
+    const requestId = latestFileRequest.current + 1;
+    latestFileRequest.current = requestId;
+    void readImportFile(file).then((nextState) => {
+      if (requestId === latestFileRequest.current) setState(nextState);
+    });
   };
   const confirmImport = () => {
     if (state.kind !== "preview") return;

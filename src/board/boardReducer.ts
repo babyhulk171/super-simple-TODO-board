@@ -1,6 +1,8 @@
+import { relocateCardId } from "./cardPlacement";
 import type { BoardAction, KanbanBoard, KanbanCard, KanbanColumn } from "./types";
 
 function addColumn(board: KanbanBoard, column: KanbanColumn): KanbanBoard {
+  if (board.columns.some((existingColumn) => existingColumn.id === column.id)) return board;
   return { ...board, columns: [...board.columns, column] };
 }
 
@@ -13,12 +15,14 @@ function updateColumn(board: KanbanBoard, action: Extract<BoardAction, { type: "
 
 function deleteColumn(board: KanbanBoard, columnId: string): KanbanBoard {
   const removed = board.columns.find((column) => column.id === columnId);
+  if (!removed) return board;
   const removedIds = new Set(removed?.cardIds ?? []);
   const cards = Object.fromEntries(Object.entries(board.cards).filter(([id]) => !removedIds.has(id)));
   return { ...board, columns: board.columns.filter((column) => column.id !== columnId), cards };
 }
 
 function addCard(board: KanbanBoard, columnId: string, card: KanbanCard): KanbanBoard {
+  if (!board.columns.some((column) => column.id === columnId) || board.cards[card.id]) return board;
   const columns = board.columns.map((column) => column.id === columnId
     ? { ...column, cardIds: [...column.cardIds, card.id] }
     : column);
@@ -26,10 +30,12 @@ function addCard(board: KanbanBoard, columnId: string, card: KanbanCard): Kanban
 }
 
 function updateCard(board: KanbanBoard, card: KanbanCard): KanbanBoard {
+  if (!board.cards[card.id]) return board;
   return { ...board, cards: { ...board.cards, [card.id]: card } };
 }
 
 function deleteCard(board: KanbanBoard, cardId: string): KanbanBoard {
+  if (!board.cards[cardId]) return board;
   const { [cardId]: removedCard, ...cards } = board.cards;
   void removedCard;
   const columns = board.columns.map((column) => ({ ...column, cardIds: column.cardIds.filter((id) => id !== cardId) }));
@@ -43,15 +49,15 @@ function toggleCard(board: KanbanBoard, cardId: string): KanbanBoard {
 }
 
 function moveCard(board: KanbanBoard, action: Extract<BoardAction, { type: "move-card" }>): KanbanBoard {
-  const columns = board.columns.map((column) => ({ ...column, cardIds: column.cardIds.filter((id) => id !== action.cardId) }));
-  const targetIndex = columns.findIndex((column) => column.id === action.toColumnId);
-  if (targetIndex < 0) return board;
-  const target = columns[targetIndex];
-  const overIndex = action.overCardId ? target.cardIds.indexOf(action.overCardId) : -1;
-  const fallbackIndex = overIndex < 0 ? target.cardIds.length : overIndex;
+  if (!board.cards[action.cardId]) return board;
+  const target = board.columns.find((column) => column.id === action.toColumnId);
+  if (!target) return board;
+  const targetCardIds = target.cardIds.filter((cardId) => cardId !== action.cardId);
+  const overIndex = action.overCardId ? targetCardIds.indexOf(action.overCardId) : -1;
+  const fallbackIndex = overIndex < 0 ? targetCardIds.length : overIndex;
   const requestedIndex = Number.isInteger(action.toIndex) ? action.toIndex : fallbackIndex;
-  const insertAt = Math.min(Math.max(requestedIndex ?? fallbackIndex, 0), target.cardIds.length);
-  target.cardIds.splice(insertAt, 0, action.cardId);
+  const columns = relocateCardId(board.columns, action.cardId, target.id, requestedIndex ?? fallbackIndex);
+  if (!columns) return board;
   return { ...board, columns };
 }
 

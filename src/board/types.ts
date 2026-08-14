@@ -1,6 +1,19 @@
-export type ColumnTone = "blue" | "violet" | "amber" | "green" | "rose";
-export type CardPriority = "low" | "medium" | "high";
+export const COLUMN_TONES = ["blue", "violet", "amber", "green", "rose"] as const;
+export const CARD_PRIORITIES = ["low", "medium", "high"] as const;
+
+export type ColumnTone = typeof COLUMN_TONES[number];
+export type CardPriority = typeof CARD_PRIORITIES[number];
 export type Theme = "light" | "dark";
+
+/** Checks whether a value is a supported column tone. Example: `isColumnTone(value)`. */
+export function isColumnTone(value: unknown): value is ColumnTone {
+  return typeof value === "string" && COLUMN_TONES.includes(value as ColumnTone);
+}
+
+/** Checks whether a value is a supported card priority. Example: `isCardPriority(value)`. */
+export function isCardPriority(value: unknown): value is CardPriority {
+  return typeof value === "string" && CARD_PRIORITIES.includes(value as CardPriority);
+}
 
 export interface KanbanCard {
   id: string;

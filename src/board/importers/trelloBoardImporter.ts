@@ -1,6 +1,6 @@
 import type { CardPriority, KanbanBoard, KanbanCard, KanbanCardMap, KanbanColumn } from "../types";
-import type { BoardImportAdapter, BoardImportContext, BoardImportResult, BoardImportWarning } from "./importTypes";
-import { countBoardCards, isJsonRecord, normalizeImportedText } from "./importUtilities";
+import type { BoardImportAdapter, BoardImportContext, BoardImportConversion, BoardImportWarning } from "./importTypes";
+import { isJsonRecord, normalizeImportedText } from "./importUtilities";
 
 interface TrelloSource {
   name: string;
@@ -274,7 +274,7 @@ function buildWarnings(source: TrelloSource, stats: TrelloImportStats): BoardImp
   return warnings;
 }
 
-function convertTrelloBoard(value: unknown, context: BoardImportContext): BoardImportResult | undefined {
+function convertTrelloBoard(value: unknown, context: BoardImportContext): BoardImportConversion | undefined {
   const source = parseTrelloSource(value);
   if (!source) return undefined;
   const stats = createImportStats();
@@ -285,7 +285,6 @@ function convertTrelloBoard(value: unknown, context: BoardImportContext): BoardI
     source: "trello",
     sourceLabel: "Trello",
     board,
-    summary: { columns: board.columns.length, cards: countBoardCards(board) },
     warnings: buildWarnings(source, stats),
   };
 }

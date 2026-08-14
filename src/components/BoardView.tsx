@@ -32,7 +32,7 @@ function BoardTrack({ board, dispatch, onAddCard, onEditCard, onAddColumn, onEdi
     <SortableContext items={board.columns.map((column) => column.id)} strategy={horizontalListSortingStrategy}>
       <div className="board-scroller"><div className="board-track">
         {board.columns.map((column) => <KanbanColumnView key={column.id} board={board} column={column} dispatch={dispatch} onAddCard={onAddCard} onEditCard={onEditCard} onEditColumn={onEditColumn} />)}
-        <button className="add-list-button" type="button" onClick={onAddColumn}><span aria-hidden="true">＋</span><strong>Add another list</strong><small>Shape this board around your process</small></button>
+        <button className="add-list-button" type="button" aria-label="Add another list" onClick={onAddColumn}><span aria-hidden="true">＋</span><strong>Add another list</strong><small>Shape this board around your process</small></button>
       </div></div>
     </SortableContext>
   );

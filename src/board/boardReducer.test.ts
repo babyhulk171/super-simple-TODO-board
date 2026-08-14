@@ -41,6 +41,41 @@ describe("boardReducer", () => {
     expect(result.columns[0].id).toBe("done");
   });
 
+  it("moves a card within a column without mutating the previous board", () => {
+    const firstCard: KanbanCard = { ...newCard, id: "first" };
+    const secondCard: KanbanCard = { ...doneCard, id: "second" };
+    const withFirst = boardReducer(initialBoard, { type: "add-card", columnId: "planned", card: firstCard });
+    const original = boardReducer(withFirst, { type: "add-card", columnId: "planned", card: secondCard });
+    const result = boardReducer(original, { type: "move-card", cardId: "second", toColumnId: "planned", toIndex: 0 });
+
+    expect(result.columns[0].cardIds).toEqual(["second", "first"]);
+    expect(original.columns[0].cardIds).toEqual(["first", "second"]);
+  });
+
+  it("ignores stale actions that would create an unplaced card", () => {
+    const missingCard: KanbanCard = { ...newCard, id: "missing" };
+    const addResult = boardReducer(initialBoard, { type: "add-card", columnId: "unknown", card: missingCard });
+    const updateResult = boardReducer(initialBoard, { type: "update-card", card: missingCard });
+    const moveResult = boardReducer(initialBoard, { type: "move-card", cardId: "missing", toColumnId: "planned" });
+
+    expect(addResult).toBe(initialBoard);
+    expect(updateResult).toBe(initialBoard);
+    expect(moveResult).toBe(initialBoard);
+  });
+
+  it("ignores duplicate identifiers and deletions that do not match board content", () => {
+    const duplicateColumn = boardReducer(initialBoard, { type: "add-column", column: initialBoard.columns[0] });
+    const withCard = boardReducer(initialBoard, { type: "add-card", columnId: "planned", card: newCard });
+    const duplicateCard = boardReducer(withCard, { type: "add-card", columnId: "planned", card: newCard });
+    const missingColumn = boardReducer(initialBoard, { type: "delete-column", columnId: "missing" });
+    const missingCard = boardReducer(initialBoard, { type: "delete-card", cardId: "missing" });
+
+    expect(duplicateColumn).toBe(initialBoard);
+    expect(duplicateCard).toBe(withCard);
+    expect(missingColumn).toBe(initialBoard);
+    expect(missingCard).toBe(initialBoard);
+  });
+
   it("restores a supplied board", () => {
     const result = boardReducer(initialBoard, { type: "reset-board", board: { ...initialBoard, title: "Restored" } });
     expect(result.title).toBe("Restored");
